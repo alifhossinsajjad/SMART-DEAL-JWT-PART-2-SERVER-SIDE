@@ -10,7 +10,9 @@ const port = process.env.PORT || 3000;
 
 // console.log(process.env);
 
-const serviceAccount = require("./smart-deals-simple-firebase-authenti.json");
+// index.js
+const decoded = Buffer.from(process.env.FIREBASE_SERVICE_KEY, "base64").toString("utf8");
+const serviceAccount = JSON.parse(decoded);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -123,7 +125,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/latest/products", async (req, res) => {
+    app.get("/latest-products", async (req, res) => {
       const cursor = productsCollection
         .find()
         .sort({
@@ -177,8 +179,12 @@ async function run() {
       if (email) {
         if (email !== req.token_email) {
           return res.status(403).send({ massage: "forbidden access" });
+        }else{
+          console.log('it is buyer email');
+          query.buyer_email = email
         }
       }
+      console.log(query);
 
       const cursor = bidsCollection.find(query);
       const result = await cursor.toArray();
@@ -227,7 +233,7 @@ async function run() {
       res.send(result);
     });
 
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
